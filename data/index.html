@@ -84,11 +84,15 @@
 			}
 		}
 
+		function initStream() {
+			document.getElementById("stream").src = window.location.href + "stream";
+		}
+
 		window.addEventListener('load', onLoad);
 
 		function onLoad(event) {
 			initWebSocket();
-			document.getElementById("stream").src = window.location.href.slice(0, -1)  + "/stream";
+			initStream();
 		}
 	</script>
 </body>
