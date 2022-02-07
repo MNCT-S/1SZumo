@@ -21,23 +21,18 @@ typedef struct {
   size_t index;
 } camera_frame_t;
 
-// Pin definition for CAMERA_MODEL_AI_THINKER
-#define PWDN_GPIO_NUM     32
-#define RESET_GPIO_NUM    -1
-#define XCLK_GPIO_NUM      0
-#define SIOD_GPIO_NUM     26
-#define SIOC_GPIO_NUM     27
-#define Y9_GPIO_NUM       35
-#define Y8_GPIO_NUM       34
-#define Y7_GPIO_NUM       39
-#define Y6_GPIO_NUM       36
-#define Y5_GPIO_NUM       21
-#define Y4_GPIO_NUM       19
-#define Y3_GPIO_NUM       18
-#define Y2_GPIO_NUM        5
-#define VSYNC_GPIO_NUM    25
-#define HREF_GPIO_NUM     23
-#define PCLK_GPIO_NUM     22
+// Select camera model
+//#define CAMERA_MODEL_WROVER_KIT // Has PSRAM
+//#define CAMERA_MODEL_ESP_EYE // Has PSRAM
+//#define CAMERA_MODEL_M5STACK_PSRAM // Has PSRAM (TimerCAM OV3660)
+//#define CAMERA_MODEL_M5STACK_V2_PSRAM // M5Camera version B Has PSRAM
+//#define CAMERA_MODEL_M5STACK_WIDE // Has PSRAM
+//#define CAMERA_MODEL_M5STACK_ESP32CAM // No PSRAM
+//#define CAMERA_MODEL_M5STACK_UNITCAM // No PSRAM
+#define CAMERA_MODEL_AI_THINKER // Has PSRAM
+//#define CAMERA_MODEL_TTGO_T_JOURNAL // No PSRAM
+
+#include "pins.h"   // The name "camera_pins.h" will result in an error. 
 
 #define PART_BOUNDARY "123456789000000000000987654321"
 static const char* STREAM_CONTENT_TYPE = "multipart/x-mixed-replace;boundary=" PART_BOUNDARY;
@@ -305,6 +300,12 @@ void initcamera() {
     Serial.printf("Camera init failed with error 0x%x", err);
     return;
   }
+
+  // Camera setting
+#if defined(CAMERA_MODEL_M5STACK_PSRAM)   // (TimerCAM OV3660)
+  sensor_t * s = esp_camera_sensor_get();
+  s->set_hmirror(s, 1);
+#endif
 }
 
 AsyncWebServer server(80);
