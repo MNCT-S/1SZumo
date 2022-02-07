@@ -76,6 +76,7 @@
 		function onMessage(event) {
 			if (event && event.data) {
 				console.log(event.data);
+				initStream();
 			}
 		}
 		function send(msg) {
@@ -92,7 +93,6 @@
 
 		function onLoad(event) {
 			initWebSocket();
-			initStream();
 		}
 	</script>
 </body>

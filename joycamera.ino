@@ -320,16 +320,16 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
   }
   Serial.println(msg); // GamePad の座標をシリアルに
   int xyIndex = msg.indexOf(',');
-  int x = msg.substring(0, xyIndex);
-  int y = msg.substring(xyIndex + 1);
-  Serial.println("X:" + x);
-  Serial.println("Y:" + y);
+  int x = msg.substring(0, xyIndex).toInt();;
+  int y = msg.substring(xyIndex + 1).toInt();;
+  Serial.printf("X: %d ", x);
+  Serial.printf("Y: %d\n", y);
 }
 
 void onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventType type, void * arg, uint8_t *data, size_t len) {
   if (type == WS_EVT_CONNECT) {
-    //Serial.println("Websocket client connection received");
     Serial.printf("ws(url=%s,id=%u) connect\n", server->url(), client->id());
+    client->printf("ESP32 Server. Hello Client %u :)", client->id());
   } else if (type == WS_EVT_DISCONNECT) {
     Serial.println("Client disconnected");
   } else if (type == WS_EVT_DATA) {
@@ -339,7 +339,7 @@ void onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventT
 
 void setup() {
   WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0); //disable brownout detector
-   
+
   Serial.begin(115200);
   Serial.setDebugOutput(false);
 
