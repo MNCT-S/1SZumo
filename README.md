@@ -1,5 +1,7 @@
 # 1S メカトロニクス演習 II
 
+`git clone https://github.com/MNCT-S/1SJoyCamera.git joycamera`
+
 ## ESP32 + OV2640 について
 
 - ESP32 は，`PSRAM` 搭載の物が必要
