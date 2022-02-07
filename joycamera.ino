@@ -320,8 +320,8 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
   }
   Serial.println(msg); // GamePad の座標をシリアルに
   int xyIndex = msg.indexOf(',');
-  int x = msg.substring(0, xyIndex);
-  int y = msg.substring(xyIndex + 1);
+  String x = msg.substring(0, xyIndex);
+  String y = msg.substring(xyIndex + 1);
   Serial.println("X:" + x);
   Serial.println("Y:" + y);
 }
