@@ -5,6 +5,7 @@
 *********/
 
 #include <WiFi.h>
+#include <Wire.h>
 #include "esp_camera.h"
 #include "ESPAsyncWebServer.h"
 #include "soc/soc.h" //disable brownout problems
@@ -15,6 +16,10 @@ const char* ssid     = "ESP32-Access-Point";
 const char* password = "mncts-12345";
 const IPAddress ip(192, 168, 10, 11);
 const IPAddress subnet(255, 255, 255, 0);
+
+const int     PIN_SDA = 4;
+const int     PIN_SCL = 13;
+const uint8_t I2C_ADDRESS = 0x10;
 
 typedef struct {
   camera_fb_t * fb;
@@ -311,6 +316,13 @@ void initcamera() {
 AsyncWebServer server(80);
 AsyncWebSocket ws("/ws");
 
+void SendI2C(byte s)
+{
+  Wire.beginTransmission(I2C_ADDRESS);
+  Wire.write(s);
+  Wire.endTransmission();
+}
+
 void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
   String msg = "";
   AwsFrameInfo * info = (AwsFrameInfo*)arg;
@@ -325,6 +337,13 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
   int y = msg.substring(xyIndex + 1).toInt();;
   Serial.printf("X: %d ", x);
   Serial.printf("Y: %d\n", y);
+
+  // 座標値をI2Cで送信（100で計算）
+  byte  sx = abs(x) / 14;   // 0～100を7(0111)段階に
+  byte  sy = abs(y) / 14;
+  if ( x < 0 ) sx |= 0x80;  // 符号の付与
+  if ( y < 0 ) sy |= 0x80;
+  SendI2C( (sy<<4)|sx );
 }
 
 void onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventType type, void * arg, uint8_t *data, size_t len) {
@@ -351,6 +370,9 @@ void setup() {
 
   initcamera();
   softap_connect(ssid, password, ip, subnet);
+
+  // Setup I2C
+  Wire.begin(PIN_SDA, PIN_SCL);  // master
 
   // Route for root / web page
   server.on("/", HTTP_GET, [](AsyncWebServerRequest * request) {
