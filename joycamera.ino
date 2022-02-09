@@ -5,16 +5,23 @@
 *********/
 
 #include <WiFi.h>
+#include <Wire.h>
 #include "esp_camera.h"
 #include "ESPAsyncWebServer.h"
 #include "soc/soc.h" //disable brownout problems
 #include "soc/rtc_cntl_reg.h"  //disable brownout problems
 #include "SPIFFS.h"
 
+//#define _DEBUG
+
 const char* ssid     = "ESP32-Access-Point";
 const char* password = "mncts-12345";
 const IPAddress ip(192, 168, 10, 11);
 const IPAddress subnet(255, 255, 255, 0);
+
+const int     PIN_SDA = 4;
+const int     PIN_SCL = 13;
+const uint8_t I2C_ADDRESS = 0x10;
 
 typedef struct {
   camera_fb_t * fb;
@@ -246,18 +253,22 @@ void streamJpg(AsyncWebServerRequest *request) {
 }
 
 void softap_connect(const char *ssid, const char *password, IPAddress ip, IPAddress subnet) {
+#ifdef _DEBUG
   Serial.println("Setting AP (Access Point)…");
+#endif  
   WiFi.softAPConfig(ip, ip, subnet);
   // Remove the password parameter, if you want the AP (Access Point) to be open
   WiFi.softAP(ssid, password);
 
+  IPAddress myIP = WiFi.softAPIP();
+#ifdef _DEBUG
   Serial.print("SSID:");
   Serial.println(ssid);
   Serial.print("Password:");
   Serial.println(password);
-  IPAddress myIP = WiFi.softAPIP();
   Serial.print("Camera Stream Ready! Connect to the ESP32 AP and go to: http://");
   Serial.println(myIP);
+#endif  
 }
 
 void initcamera() {
@@ -297,7 +308,9 @@ void initcamera() {
   // Camera init
   esp_err_t err = esp_camera_init(&config);
   if (err != ESP_OK) {
+#ifdef _DEBUG    
     Serial.printf("Camera init failed with error 0x%x", err);
+#endif    
     return;
   }
 
@@ -311,6 +324,19 @@ void initcamera() {
 AsyncWebServer server(80);
 AsyncWebSocket ws("/ws");
 
+void SendI2C(byte s)
+{
+  Wire.beginTransmission(I2C_ADDRESS);
+  Wire.write(s);
+#ifdef _DEBUG
+  byte r = Wire.endTransmission();
+  Serial.print("sendData=");  Serial.print(s, HEX);  Serial.print(" ");
+  Serial.print("I2C TransCode="); Serial.println(r);
+#else          
+  Wire.endTransmission();
+#endif
+}
+
 void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
   String msg = "";
   AwsFrameInfo * info = (AwsFrameInfo*)arg;
@@ -319,20 +345,33 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
       msg += (char) data[i];
     }
   }
-  Serial.println(msg); // GamePad の座標をシリアルに
   int xyIndex = msg.indexOf(',');
   int x = msg.substring(0, xyIndex).toInt();;
   int y = msg.substring(xyIndex + 1).toInt();;
+#ifdef _DEBUG  
+  Serial.println(msg); // GamePad の座標をシリアルに
   Serial.printf("X: %d ", x);
   Serial.printf("Y: %d\n", y);
+#endif  
+
+  // 座標値をI2Cで送信（100で計算）
+  byte  sx = (abs(x) / 14) & 0x0f;   // 0～100を0～7(0111)に
+  byte  sy = (abs(y) / 14) & 0x0f;
+  if ( x < 0 ) sx |= 0x08;  // 符号の付与
+  if ( y < 0 ) sy |= 0x08;
+  SendI2C( (sy<<4)|sx );
 }
 
 void onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventType type, void * arg, uint8_t *data, size_t len) {
   if (type == WS_EVT_CONNECT) {
+#ifdef _DEBUG    
     Serial.printf("ws(url=%s,id=%u) connect\n", server->url(), client->id());
+#endif    
     client->printf("ESP32 Server. Hello Client %u :)", client->id());
   } else if (type == WS_EVT_DISCONNECT) {
+#ifdef _DEBUG    
     Serial.println("Client disconnected");
+#endif    
   } else if (type == WS_EVT_DATA) {
     handleWebSocketMessage(arg, data, len);
   }
@@ -341,16 +380,23 @@ void onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventT
 void setup() {
   WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0); //disable brownout detector
 
+#ifdef _DEBUG
   Serial.begin(115200);
   Serial.setDebugOutput(false);
+#endif
 
   if (!SPIFFS.begin(true)) {
+#ifdef _DEBUG
     Serial.println("An Error has occurred while mounting SPIFFS");
+#endif    
     return;
   }
 
   initcamera();
   softap_connect(ssid, password, ip, subnet);
+
+  // Setup I2C
+  Wire.begin(PIN_SDA, PIN_SCL);  // master
 
   // Route for root / web page
   server.on("/", HTTP_GET, [](AsyncWebServerRequest * request) {
