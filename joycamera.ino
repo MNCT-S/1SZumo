@@ -12,7 +12,7 @@
 #include "soc/rtc_cntl_reg.h"  //disable brownout problems
 #include "SPIFFS.h"
 
-#define _DEBUG
+//#define _DEBUG
 
 const char* ssid     = "ESP32-Access-Point";
 const char* password = "mncts-12345";
@@ -355,10 +355,10 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
 #endif  
 
   // 座標値をI2Cで送信（100で計算）
-  byte  sx = abs(x) / 14;   // 0～100を7(0111)段階に
-  byte  sy = abs(y) / 14;
-  if ( x < 0 ) sx |= 0x80;  // 符号の付与
-  if ( y < 0 ) sy |= 0x80;
+  byte  sx = (abs(x) / 14) & 0x0f;   // 0～100を0～7(0111)に
+  byte  sy = (abs(y) / 14) & 0x0f;
+  if ( x < 0 ) sx |= 0x08;  // 符号の付与
+  if ( y < 0 ) sy |= 0x08;
   SendI2C( (sy<<4)|sx );
 }
 
