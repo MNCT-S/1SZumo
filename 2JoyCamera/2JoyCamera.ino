@@ -31,12 +31,12 @@ typedef struct {
 // Select camera model
 //#define CAMERA_MODEL_WROVER_KIT // Has PSRAM
 //#define CAMERA_MODEL_ESP_EYE // Has PSRAM
-#define CAMERA_MODEL_M5STACK_PSRAM // Has PSRAM (TimerCAM OV3660)
+//#define CAMERA_MODEL_M5STACK_PSRAM // Has PSRAM (TimerCAM OV3660)
 //#define CAMERA_MODEL_M5STACK_V2_PSRAM // M5Camera version B Has PSRAM
 //#define CAMERA_MODEL_M5STACK_WIDE // Has PSRAM
 //#define CAMERA_MODEL_M5STACK_ESP32CAM // No PSRAM
 //#define CAMERA_MODEL_M5STACK_UNITCAM // No PSRAM
-//#define CAMERA_MODEL_AI_THINKER // Has PSRAM
+#define CAMERA_MODEL_AI_THINKER // Has PSRAM
 //#define CAMERA_MODEL_TTGO_T_JOURNAL // No PSRAM
 
 #include "pins.h"   // The name "camera_pins.h" will result in an error. 
@@ -340,8 +340,6 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
   Serial.printf("X: %d ", x);
   Serial.printf("Y: %d\n", y);
 #endif
-
-  // x:MotorL y:MotorR
   Wire.beginTransmission(I2C_ADDRESS);
   Wire.write(x);
   Wire.write(y);
