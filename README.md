@@ -1,6 +1,6 @@
 # 1S メカトロニクス演習 II
 
-## JoyCamera
+## JoyCamera + ZumoJoyCamera
 
 ### ESP32 + OV2640 について
 
@@ -23,6 +23,10 @@
 - [bobboteck/JoyStick](https://github.com/bobboteck/JoyStick) : Javascript の JoyStick ライブラリ
 - [Robot Joystick to Differential Steering](https://www.impulseadventure.com/elec/robot-differential-steering.html)
 
-## Zumo_JoycCamera
+## M5mario_OV3660 + ZumoMario + PythonMario.py
 
-JoycCamera から I2C のデータを受信して，Zumo のモータを回す．
+PCに接続したゲームコントローラでZumoを動かす一式
+
+## M5mario_OV3660_iPad + ZumoMario_iPad
+
+DabbleアプリでZumoを動かす一式
