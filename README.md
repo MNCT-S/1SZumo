@@ -23,6 +23,6 @@
 - [bobboteck/JoyStick](https://github.com/bobboteck/JoyStick) : Javascript の JoyStick ライブラリ
 - [Robot Joystick to Differential Steering](https://www.impulseadventure.com/elec/robot-differential-steering.html)
 
-## ZumoMario
+## Zumo_JoycCamera
 
 JoycCamera から I2C のデータを受信して，Zumo のモータを回す．
