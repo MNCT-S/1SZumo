@@ -1,8 +1,8 @@
 # 1S メカトロニクス演習 II
 
-`git clone https://github.com/MNCT-S/1SJoyCamera.git joycamera`
+## JoyCamera
 
-## ESP32 + OV2640 について
+### ESP32 + OV2640 について
 
 - ESP32 は，`PSRAM` 搭載の物が必要
 - Arduino を使用
@@ -11,7 +11,6 @@
 ### 使用する（外部）ライブラリ
 
 - [ESPAsyncWebServer](https://github.com/me-no-dev/ESPAsyncWebServer)
-
 - [AsyncTCP](https://github.com/me-no-dev/AsyncTCP) : ESPAsyncWebServer が使用
 
 ### SPIFFS の利用
@@ -21,5 +20,9 @@
 ## 参考
 
 - [AsyncWebCamera.cpp](https://gist.github.com/me-no-dev/d34fba51a8f059ac559bf62002e61aa3)
-
 - [bobboteck/JoyStick](https://github.com/bobboteck/JoyStick) : Javascript の JoyStick ライブラリ
+- [Robot Joystick to Differential Steering](https://www.impulseadventure.com/elec/robot-differential-steering.html)
+
+## ZumoMario
+
+JoycCamera から I2C のデータを受信して，Zumo のモータを回す．

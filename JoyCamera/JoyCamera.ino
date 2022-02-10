@@ -12,7 +12,8 @@
 #include "soc/rtc_cntl_reg.h"  //disable brownout problems
 #include "SPIFFS.h"
 
-//#define _DEBUG
+#define _DEBUG
+//#define _MAGARA
 
 const char* ssid     = "ESP32-Access-Point";
 const char* password = "mncts-12345";
@@ -31,12 +32,12 @@ typedef struct {
 // Select camera model
 //#define CAMERA_MODEL_WROVER_KIT // Has PSRAM
 //#define CAMERA_MODEL_ESP_EYE // Has PSRAM
-//#define CAMERA_MODEL_M5STACK_PSRAM // Has PSRAM (TimerCAM OV3660)
+#define CAMERA_MODEL_M5STACK_PSRAM // Has PSRAM (TimerCAM OV3660)
 //#define CAMERA_MODEL_M5STACK_V2_PSRAM // M5Camera version B Has PSRAM
 //#define CAMERA_MODEL_M5STACK_WIDE // Has PSRAM
 //#define CAMERA_MODEL_M5STACK_ESP32CAM // No PSRAM
 //#define CAMERA_MODEL_M5STACK_UNITCAM // No PSRAM
-#define CAMERA_MODEL_AI_THINKER // Has PSRAM
+//#define CAMERA_MODEL_AI_THINKER // Has PSRAM
 //#define CAMERA_MODEL_TTGO_T_JOURNAL // No PSRAM
 
 #include "pins.h"   // The name "camera_pins.h" will result in an error. 
@@ -345,21 +346,31 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
       msg += (char) data[i];
     }
   }
-  int xyIndex = msg.indexOf(',');
-  int x = msg.substring(0, xyIndex).toInt();;
-  int y = msg.substring(xyIndex + 1).toInt();;
-#ifdef _DEBUG  
+  byte xyIndex = msg.indexOf(',');
+  signed char x = msg.substring(0, xyIndex).toInt();
+  signed char y = msg.substring(xyIndex + 1).toInt();
+#ifdef _DEBUG
+  //int x = msg.substring(0, xyIndex).toInt();
+  //int y = msg.substring(xyIndex + 1).toInt();
   Serial.println(msg); // GamePad の座標をシリアルに
   Serial.printf("X: %d ", x);
   Serial.printf("Y: %d\n", y);
-#endif  
+#endif
 
+#ifdef _MAGARA
   // 座標値をI2Cで送信（100で計算）
   byte  sx = (abs(x) / 14) & 0x0f;   // 0～100を0～7(0111)に
   byte  sy = (abs(y) / 14) & 0x0f;
   if ( x < 0 ) sx |= 0x08;  // 符号の付与
   if ( y < 0 ) sy |= 0x08;
   SendI2C( (sy<<4)|sx );
+#endif
+
+  // x:MotorL y:MotorR
+  Wire.beginTransmission(I2C_ADDRESS);
+  Wire.write(x);
+  Wire.write(y);
+  Wire.endTransmission();
 }
 
 void onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventType type, void * arg, uint8_t *data, size_t len) {
