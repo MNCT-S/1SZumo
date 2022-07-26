@@ -35,7 +35,7 @@ const uint8_t I2C_ADDRESS = 0x10;
 #ifdef SOFT_AP
 //M5camera SoftAP Configration
 const char ssid[] = "M5camera99";
-const char pass[] = "mncts-12345";
+const char pass[] = "M5camera99";
 const IPAddress ip(192,168,199,1);
 const IPAddress subnet(255,255,255,0);
 #else
@@ -169,7 +169,8 @@ void setup() {
   if ( !setupWiFicamera() ) return;
 
   // Setup Bluetooth (for iPad)
-  Dabble.begin("M5camera99");
+//  Dabble.begin("M5camera99");
+  Dabble.begin(ssid);
 
   // Setup I2C
   Wire.begin(PIN_SDA, PIN_SCL);  // master
