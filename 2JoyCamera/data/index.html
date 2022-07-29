@@ -1,0 +1,92 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+	<title>ESP32 + Camera + JoyStick</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+	<style>
+		html {
+			font-family: Helvetica;
+			display: inline-block;
+			text-align: center;
+		}
+
+		body {
+			margin: 0;
+		}
+
+		img {
+			width: auto;
+			max-width: 100%;
+			height: auto;
+		}
+		.joy {
+			display: flex;
+			flex-direction: row;
+			justify-content: space-around;
+		}
+	</style>
+	<script src="joy.min.js"></script>
+</head>
+
+<body>
+	<img src="" id="stream" />
+
+	<div class="joy">
+		<div id="joy1Div" style="width:200px;height:200px;"></div>
+		<div id="joy2Div" style="width:200px;height:200px;"></div>
+	</div>
+
+<script type="text/javascript">
+		var joy1Param = { "title": "joystick1" };
+		var Joy1 = new JoyStick('joy1Div', joy1Param);
+
+		var joy2Param = { "title": "joystick2" };
+		var Joy2 = new JoyStick('joy2Div', joy2Param);
+
+		setInterval(function () { send(Joy1.GetX() + "," + Joy2.GetY()) }, 300);
+	</script>
+	<script>
+		var gateway = `ws://${window.location.hostname}/ws`;
+		var websocket;
+		function initWebSocket() {
+			console.log('Trying to open a WebSocket connection...');
+			websocket = new WebSocket(gateway);
+			websocket.onopen = onOpen;
+			websocket.onclose = onClose;
+			websocket.onmessage = onMessage;
+		}
+		function onOpen(event) {
+			console.log('Connection opened');
+		}
+		function onClose(event) {
+			console.log('Connection closed');
+			setTimeout(initWebSocket, 2000);
+		}
+		function onMessage(event) {
+			if (event && event.data) {
+				console.log(event.data);
+				initStream();
+			}
+		}
+		function send(msg) {
+			if (websocket != null) {
+				websocket.send("" + msg);
+			}
+		}
+
+		function initStream() {
+			document.getElementById("stream").src = window.location.href + "stream";
+		}
+
+		window.addEventListener('load', onLoad);
+
+		function onLoad(event) {
+			initWebSocket();
+			//initStream();
+		}
+	</script>
+</body>
+
+</html>
