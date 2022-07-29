@@ -30,3 +30,6 @@ PCに接続したゲームコントローラでZumoを動かす一式
 ## M5mario_OV3660_iPad + ZumoMario_iPad
 
 DabbleアプリでZumoを動かす一式
+
+- [Dabble-ESP32 library](https://thestempedia.com/download/24469/)  
+Arduino IDE で zip形式のライブラリをインストール
