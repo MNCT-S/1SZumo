@@ -7,6 +7,8 @@
 
 //#define _DEBUG
 #define SOFT_AP
+#define _SSID   "M5Camera99"
+#define _IP     199
 
 const int     PIN_SDA = 4;
 const int     PIN_SCL = 13;
@@ -34,9 +36,9 @@ const uint8_t I2C_ADDRESS = 0x10;
 
 #ifdef SOFT_AP
 //M5camera SoftAP Configration
-const char ssid[] = "M5camera99";
-const char pass[] = "M5camera99";
-const IPAddress ip(192,168,199,1);
+const char* ssid = _SSID;
+const char* password = _SSID;
+const IPAddress ip(192,168,_IP,1);
 const IPAddress subnet(255,255,255,0);
 #else
 //NotePC AccessPoint
@@ -113,7 +115,7 @@ bool setupWiFicamera()
 #endif
 
 #ifdef SOFT_AP
-  WiFi.softAP(ssid,pass);
+  WiFi.softAP(ssid,password);
   delay(100);
   WiFi.softAPConfig(ip,ip,subnet);
   IPAddress myIP = WiFi.softAPIP();
@@ -122,7 +124,7 @@ bool setupWiFicamera()
   Serial.print("SSID:");
   Serial.println(ssid);
   Serial.print("Password:");
-  Serial.println(pass);
+  Serial.println(password);
 #endif
   startCameraServer();
 #ifdef _DEBUG
