@@ -1,11 +1,16 @@
+/*
+ * esp32 v2.0.4 のサンプルをベースに改造
+ * Dabble.begin() を入れると WiFi がつながらない現象
+ * 原因不明のため esp32 ライブラリは 2.0.3 を使用
+*/
 #define CUSTOM_SETTINGS
 #define INCLUDE_GAMEPAD_MODULE
 #include <DabbleESP32.h>  // 先に書かないとArduinoIDEがハングアップ
+#include "esp_camera.h"
 #include <WiFi.h>
 #include <Wire.h>
-#include "esp_camera.h"
 
-//#define _DEBUG
+#define _DEBUG
 #define SOFT_AP
 #define _SSID   "M5Camera99"
 #define _IP     199
@@ -20,36 +25,41 @@ const uint8_t I2C_ADDRESS = 0x10;
 //            Ensure ESP32 Wrover Module or other board with PSRAM is selected
 //            Partial images will be transmitted if image exceeds buffer size
 //
+//            You must select partition scheme from the board menu that has at least 3MB APP space.
+//            Face Recognition is DISABLED for ESP32 and ESP32-S2, because it takes up from 15 
+//            seconds to process single frame. Face Detection is ENABLED if PSRAM is enabled as well
 
+// ===================
 // Select camera model
+// ===================
 //#define CAMERA_MODEL_WROVER_KIT // Has PSRAM
 //#define CAMERA_MODEL_ESP_EYE // Has PSRAM
-#define CAMERA_MODEL_M5STACK_PSRAM // Has PSRAM (TimerCAM)
+//#define CAMERA_MODEL_ESP32S3_EYE // Has PSRAM
+#define CAMERA_MODEL_M5STACK_PSRAM // Has PSRAM
 //#define CAMERA_MODEL_M5STACK_V2_PSRAM // M5Camera version B Has PSRAM
 //#define CAMERA_MODEL_M5STACK_WIDE // Has PSRAM
 //#define CAMERA_MODEL_M5STACK_ESP32CAM // No PSRAM
 //#define CAMERA_MODEL_M5STACK_UNITCAM // No PSRAM
 //#define CAMERA_MODEL_AI_THINKER // Has PSRAM
 //#define CAMERA_MODEL_TTGO_T_JOURNAL // No PSRAM
+// ** Espressif Internal Boards **
+//#define CAMERA_MODEL_ESP32_CAM_BOARD
+//#define CAMERA_MODEL_ESP32S2_CAM_BOARD
+//#define CAMERA_MODEL_ESP32S3_CAM_LCD
 
 #include "camera_pins.h"
 
-#ifdef SOFT_AP
-//M5camera SoftAP Configration
+// ===========================
+// Enter your WiFi credentials
+// ===========================
 const char* ssid = _SSID;
 const char* password = _SSID;
 const IPAddress ip(192,168,_IP,1);
 const IPAddress subnet(255,255,255,0);
-#else
-//NotePC AccessPoint
-const char* ssid = "DESKTOP-O5GQ6F4 0443";
-const char* password = "47Z}151g";
-#endif
 
 void startCameraServer();
 
-bool setupWiFicamera()
-{
+bool setupWiFicamera() {
   camera_config_t config;
   config.ledc_channel = LEDC_CHANNEL_0;
   config.ledc_timer = LEDC_TIMER_0;
@@ -70,18 +80,32 @@ bool setupWiFicamera()
   config.pin_pwdn = PWDN_GPIO_NUM;
   config.pin_reset = RESET_GPIO_NUM;
   config.xclk_freq_hz = 20000000;
-  config.pixel_format = PIXFORMAT_JPEG;
+  config.frame_size = FRAMESIZE_UXGA;
+  config.pixel_format = PIXFORMAT_JPEG; // for streaming
+  //config.pixel_format = PIXFORMAT_RGB565; // for face detection/recognition
+  config.grab_mode = CAMERA_GRAB_WHEN_EMPTY;
+  config.fb_location = CAMERA_FB_IN_PSRAM;
+  config.jpeg_quality = 12;
+  config.fb_count = 1;
   
   // if PSRAM IC present, init with UXGA resolution and higher JPEG quality
   //                      for larger pre-allocated frame buffer.
-  if(psramFound()){
-    config.frame_size = FRAMESIZE_UXGA;
-    config.jpeg_quality = 10;
-    config.fb_count = 2;
+  if(config.pixel_format == PIXFORMAT_JPEG){
+    if(psramFound()){
+      config.jpeg_quality = 10;
+      config.fb_count = 2;
+      config.grab_mode = CAMERA_GRAB_LATEST;
+    } else {
+      // Limit the frame size when PSRAM is not available
+      config.frame_size = FRAMESIZE_SVGA;
+      config.fb_location = CAMERA_FB_IN_DRAM;
+    }
   } else {
-    config.frame_size = FRAMESIZE_SVGA;
-    config.jpeg_quality = 12;
-    config.fb_count = 1;
+    // Best option for face detection/recognition
+    config.frame_size = FRAMESIZE_240X240;
+#if CONFIG_IDF_TARGET_ESP32S3
+    config.fb_count = 2;
+#endif
   }
 
 #if defined(CAMERA_MODEL_ESP_EYE)
@@ -107,16 +131,21 @@ bool setupWiFicamera()
     s->set_saturation(s, -2); // lower the saturation
   }
   // drop down frame size for higher initial frame rate
-  s->set_framesize(s, FRAMESIZE_VGA);
+  if(config.pixel_format == PIXFORMAT_JPEG){
+//    s->set_framesize(s, FRAMESIZE_QVGA);
+    s->set_framesize(s, FRAMESIZE_VGA);
+  }
 
 #if defined(CAMERA_MODEL_M5STACK_WIDE) || defined(CAMERA_MODEL_M5STACK_ESP32CAM)
   s->set_vflip(s, 1);
   s->set_hmirror(s, 1);
 #endif
 
-#ifdef SOFT_AP
+#if defined(CAMERA_MODEL_ESP32S3_EYE)
+  s->set_vflip(s, 1);
+#endif
+
   WiFi.softAP(ssid,password);
-  WiFi.setSleep(false);
   delay(100);
   WiFi.softAPConfig(ip,ip,subnet);
   IPAddress myIP = WiFi.softAPIP();
@@ -127,53 +156,32 @@ bool setupWiFicamera()
   Serial.print("Password:");
   Serial.println(password);
 #endif
+
   startCameraServer();
+
 #ifdef _DEBUG
   Serial.print("Camera Ready! Use 'http://");
   Serial.print(myIP);
   Serial.println("' to connect");
-#endif
-#else
-  WiFi.begin(ssid, password);
-#ifdef _DEBUG
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.print(".");
-  }
-  Serial.println("");
-  Serial.println("WiFi connected");
-#else
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-  }
-#endif  
-  startCameraServer();
-#ifdef _DEBUG
-  Serial.print("Camera Ready! Use 'http://");
-  Serial.print(WiFi.localIP());
-  Serial.println("' to connect");
-#endif
 #endif
 
   return true;
 }
 
 void setup() {
-  pinMode(PIN_LED, OUTPUT);
-  digitalWrite(PIN_LED, LOW);    // power on
-
-#ifdef _DEBUG
+#ifdef _DEBUG  
   Serial.begin(115200);
   Serial.setDebugOutput(true);
   Serial.println();
 #endif
 
-  // Setup Camera
-  if ( !setupWiFicamera() ) return;
-
   // Setup Bluetooth (for iPad)
-//  Dabble.begin("M5camera99");
-  Dabble.begin(ssid);
+//  Dabble.begin(ssid);   // これを入れるとWiFiがつながらなくなる
+
+  // Setup Camera
+  if ( !setupWiFicamera() ) {
+    return;
+  }
 
   // Setup I2C
   Wire.begin(PIN_SDA, PIN_SCL);  // master
@@ -182,47 +190,6 @@ void setup() {
 }
 
 void loop() {
-  Dabble.processInput();
-  // ボタンの場合
-  // 下位4ビットに前(1)後(2)左(3)右(4)の4パターン|0x80
-  // アナログスティックの場合
-  // 上位4ビットにモータパワー（0-7）
-  // 下位4ビットに進行方向15度ずつ24パターン -> 30度ずつ12パターンに
-  byte s = 0;
-  if ( GamePad.isUpPressed() || GamePad.isTrianglePressed() ) {
-    s  = 1;
-    s |= 0x80;
-  }
-  else if ( GamePad.isDownPressed() || GamePad.isCrossPressed() ) {
-    s  = 2;
-    s |= 0x80;
-  }
-  else if ( GamePad.isLeftPressed() || GamePad.isSquarePressed() ) {
-    s  = 3;
-    s |= 0x80;
-  }
-  else if ( GamePad.isRightPressed() || GamePad.isCirclePressed() ) {
-    s  = 4;
-    s |= 0x80;
-  }
-  else {
-    int p = GamePad.getRadius(),  // 0-6 マニュアルでは7までだが7まで出ない角度があった
-        a = GamePad.getAngle();   // 0-345 step15
-    s = (p<<4) | ((a/30)&0x0f);
-  }
-  dataSend(s);
-  delay(100);
-}
-
-void dataSend(byte s)
-{
-  Wire.beginTransmission(I2C_ADDRESS);
-  Wire.write(s);
-#ifdef _DEBUG
-  byte r = Wire.endTransmission();
-  Serial.print("sendData=");  Serial.print(s, HEX);  Serial.print(" ");
-  Serial.print("I2C TransCode="); Serial.println(r);
-#else          
-  Wire.endTransmission();
-#endif
+  // Do nothing. Everything is done in another task by the web server
+  delay(10000);
 }
