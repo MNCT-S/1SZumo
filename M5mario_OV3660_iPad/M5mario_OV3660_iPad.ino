@@ -116,6 +116,7 @@ bool setupWiFicamera()
 
 #ifdef SOFT_AP
   WiFi.softAP(ssid,password);
+  WiFi.setSleep(false);
   delay(100);
   WiFi.softAPConfig(ip,ip,subnet);
   IPAddress myIP = WiFi.softAPIP();
