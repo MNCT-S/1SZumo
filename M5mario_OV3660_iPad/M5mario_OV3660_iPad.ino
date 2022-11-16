@@ -5,10 +5,13 @@
 #include <Wire.h>
 #include "esp_camera.h"
 
-//#define _DEBUG
-#define SOFT_AP
-#define _SSID   "M5Camera99"
-#define _IP     199
+#define _DEBUG
+//#define _DEBUG_I2C
+//#define SOFT_AP
+//#define _SSID   "M5Camera99"
+//#define _IP     199
+#define _SSID   "Mechatro-02"
+#define _BLE    "M5Camera12"
 
 const int     PIN_SDA = 4;
 const int     PIN_SCL = 13;
@@ -34,16 +37,13 @@ const uint8_t I2C_ADDRESS = 0x10;
 
 #include "camera_pins.h"
 
-#ifdef SOFT_AP
-//M5camera SoftAP Configration
+// AccessPoint
 const char* ssid = _SSID;
 const char* password = _SSID;
+#ifdef SOFT_AP
+//M5camera SoftAP Configration
 const IPAddress ip(192,168,_IP,1);
 const IPAddress subnet(255,255,255,0);
-#else
-//NotePC AccessPoint
-const char* ssid = "DESKTOP-O5GQ6F4 0443";
-const char* password = "47Z}151g";
 #endif
 
 void startCameraServer();
@@ -172,8 +172,7 @@ void setup() {
   if ( !setupWiFicamera() ) return;
 
   // Setup Bluetooth (for iPad)
-//  Dabble.begin("M5camera99");
-  Dabble.begin(ssid);
+  Dabble.begin(_BLE);
 
   // Setup I2C
   Wire.begin(PIN_SDA, PIN_SCL);  // master
@@ -218,7 +217,7 @@ void dataSend(byte s)
 {
   Wire.beginTransmission(I2C_ADDRESS);
   Wire.write(s);
-#ifdef _DEBUG
+#ifdef _DEBUG_I2C
   byte r = Wire.endTransmission();
   Serial.print("sendData=");  Serial.print(s, HEX);  Serial.print(" ");
   Serial.print("I2C TransCode="); Serial.println(r);
