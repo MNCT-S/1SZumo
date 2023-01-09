@@ -45,8 +45,8 @@ bool oldDeviceConnected = false;
 
 #include "camera_pins.h"
 
-const char* ssid = "DESKTOP-O5GQ6F4 0443";
-const char* password = "47Z}151g";
+const char* ssid = "MAGARA-NOTE";
+const char* password = "MAGARA-NOTE";
 /*
 //M5camera SoftAP Configration
 const char ssid[] = "M5camera99";
@@ -205,7 +205,7 @@ bool setupWiFicamera()
 bool setupBLE()
 {
   // Create the BLE Device
-  BLEDevice::init("M5-BLE");
+  BLEDevice::init("M5Camera99");
 
   // Create the BLE Server
   pServer = BLEDevice::createServer();
@@ -275,7 +275,10 @@ void loop() {
     }
     // connecting
     if (deviceConnected && !oldDeviceConnected) {
-    // do stuff here on connecting
+#ifdef _DEBUG        
+        Serial.println("connecting");
+#endif        
+        // do stuff here on connecting
         oldDeviceConnected = deviceConnected;
     }
 }

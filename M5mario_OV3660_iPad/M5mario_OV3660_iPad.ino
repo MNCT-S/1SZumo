@@ -5,13 +5,13 @@
 #include <Wire.h>
 #include "esp_camera.h"
 
-#define _DEBUG
+//#define _DEBUG
 //#define _DEBUG_I2C
-//#define SOFT_AP
-//#define _SSID   "M5Camera99"
-//#define _IP     199
-#define _SSID   "Mechatro-02"
-#define _BLE    "M5Camera12"
+#define SOFT_AP
+#define _SSID   "M5Camera99"
+#define _IP     199
+//#define _SSID   "MAGARA-NOTE"
+#define _BLE    "M5Camera99"
 
 const int     PIN_SDA = 4;
 const int     PIN_SCL = 13;
