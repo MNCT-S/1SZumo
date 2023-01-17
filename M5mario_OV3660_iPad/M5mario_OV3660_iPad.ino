@@ -7,11 +7,15 @@
 
 //#define _DEBUG
 //#define _DEBUG_I2C
-#define SOFT_AP
-#define _SSID   "M5Camera99"
-#define _IP     199
-//#define _SSID   "MAGARA-NOTE"
-#define _BLE    "M5Camera99"
+
+// Standalone
+//#define SOFT_AP
+//#define _SSID   "M5Camera99"
+//#define _IP     199
+
+// Wifi Router
+#define _SSID   "Mechatro-01"
+#define _BLE    "M5Camera01"
 
 const int     PIN_SDA = 4;
 const int     PIN_SCL = 13;
