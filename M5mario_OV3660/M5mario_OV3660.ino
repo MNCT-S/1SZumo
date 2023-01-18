@@ -7,6 +7,19 @@
 #include <BLE2902.h>
 
 //#define _DEBUG
+#define SOFT_AP
+
+#ifdef SOFT_AP
+//M5camera SoftAP Configration
+#define _SSID "M5Camera99"
+const IPAddress ip(192,168,199,1);
+const IPAddress subnet(255,255,255,0);
+#else
+#define _SSID "MAGARA-NOTE"
+#endif
+
+const char* ssid = _SSID;
+const char* password = _SSID;
 
 const int     PIN_SDA = 4;
 const int     PIN_SCL = 13;
@@ -44,16 +57,6 @@ bool oldDeviceConnected = false;
 //#define CAMERA_MODEL_TTGO_T_JOURNAL // No PSRAM
 
 #include "camera_pins.h"
-
-const char* ssid = "MAGARA-NOTE";
-const char* password = "MAGARA-NOTE";
-/*
-//M5camera SoftAP Configration
-const char ssid[] = "M5camera99";
-const char pass[] = "mncts-12345";
-const IPAddress ip(192,168,199,1);
-const IPAddress subnet(255,255,255,0);
-*/
 
 void dataSend(byte s)
 {
@@ -159,6 +162,27 @@ bool setupWiFicamera()
   s->set_hmirror(s, 1);
 #endif
 
+#ifdef SOFT_AP
+  //SoftAP
+  WiFi.softAP(ssid,password);
+  WiFi.setSleep(false);
+  delay(100);
+  WiFi.softAPConfig(ip,ip,subnet);
+  IPAddress myIP = WiFi.softAPIP();
+#ifdef _DEBUG
+  Serial.println("M5camera SoftAP Mode start.");
+  Serial.print("SSID:");
+  Serial.println(ssid);
+  Serial.print("Password:");
+  Serial.println(password);
+#endif
+  startCameraServer();
+#ifdef _DEBUG
+  Serial.print("Camera Ready! Use 'http://");
+  Serial.print(myIP);
+  Serial.println("' to connect");
+#endif  
+#else
   WiFi.begin(ssid, password);
 #ifdef _DEBUG
   while (WiFi.status() != WL_CONNECTED) {
@@ -172,6 +196,7 @@ bool setupWiFicamera()
     delay(500);
   }
 #endif  
+#endif
 
   startCameraServer();
 
@@ -180,25 +205,7 @@ bool setupWiFicamera()
   Serial.print(WiFi.localIP());
   Serial.println("' to connect");
 #endif
-/*
-  //SoftAP
-  WiFi.softAP(ssid,pass);
-  delay(100);
-  WiFi.softAPConfig(ip,ip,subnet);
-  IPAddress myIP = WiFi.softAPIP();
 
-  Serial.println("M5camera SoftAP Mode start.");
-  Serial.print("SSID:");
-  Serial.println(ssid);
-  Serial.print("Password:");
-  Serial.println(pass);
-
-  startCameraServer();
-
-  Serial.print("Camera Ready! Use 'http://");
-  Serial.print(myIP);
-  Serial.println("' to connect");
-*/
   return true;
 }
 
