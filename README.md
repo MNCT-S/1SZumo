@@ -33,3 +33,10 @@ DabbleアプリでZumoを動かす一式
 
 - [Dabble-ESP32 library](https://thestempedia.com/download/24469/)  
 Arduino IDE で zip形式のライブラリをインストール
+
+
+## MarioSounds
+
+国民的ゲーム音を鳴らします（小ネタ）  
+ButtonA：始まりの音  
+ButtonC：終わりの音  
