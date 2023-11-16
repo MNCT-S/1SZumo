@@ -9,15 +9,26 @@
 //#define _DEBUG_I2C
 
 // Standalone
-#define SOFT_AP
-#define _SSID   "M5Camera99"
-#define _IP     199
-#define _BLE    _SSID
+//#define SOFT_AP
+//#define _SSID   "M5Camera99"
+//#define _IP     199
+//#define _BLE    _SSID
+#ifdef SOFT_AP
+//M5camera SoftAP Configration
+const IPAddress ip(192,168,_IP,1);
+const IPAddress subnet(255,255,255,0);
+#endif
 
 // Wifi Router
-//#define _SSID   "Mechatro-01"
-//#define _BLE    "M5Camera01"
+#define _SSID   "Mechatro-01"
+#define _BLE    "M5Camera01"
+#define TIMEOUT 20   // x500ms=10s
 
+// AccessPoint
+const char* ssid = _SSID;
+const char* password = _SSID;
+
+// I2C Setting
 const int     PIN_SDA = 4;
 const int     PIN_SCL = 13;
 const int     PIN_LED = 2;
@@ -42,18 +53,47 @@ const uint8_t I2C_ADDRESS = 0x10;
 
 #include "camera_pins.h"
 
-// AccessPoint
-const char* ssid = _SSID;
-const char* password = _SSID;
+void startCameraServer(); // app_httpd.cpp
+
 #ifdef SOFT_AP
-//M5camera SoftAP Configration
-const IPAddress ip(192,168,_IP,1);
-const IPAddress subnet(255,255,255,0);
+bool setupWifiSoftAp()
+{
+  WiFi.softAP(ssid,password);
+  WiFi.setSleep(false);
+  delay(100);
+  WiFi.softAPConfig(ip,ip,subnet);
+  IPAddress myIP = WiFi.softAPIP();
+#ifdef _DEBUG
+  Serial.println("M5camera SoftAP Mode start.");
+  Serial.print("SSID:");
+  Serial.println(ssid);
+  Serial.print("Password:");
+  Serial.println(password);
+#endif
+  return true;
+}
 #endif
 
-void startCameraServer();
+bool setupWifiRouter()
+{
+  WiFi.begin(ssid, password);
+  int t=0;  // timeout count
+  bool connect=true;
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+#ifdef _DEBUG
+    Serial.print(".");
+#endif    
+    t++;
+    if ( t > TIMEOUT ) {
+      connect = false;
+      break;
+    }
+  }
+  return connect;
+}
 
-bool setupWiFicamera()
+bool setupCamera()
 {
   camera_config_t config;
   config.ledc_channel = LEDC_CHANNEL_0;
@@ -120,48 +160,42 @@ bool setupWiFicamera()
 #endif
 
 #ifdef SOFT_AP
-  WiFi.softAP(ssid,password);
-  WiFi.setSleep(false);
-  delay(100);
-  WiFi.softAPConfig(ip,ip,subnet);
-  IPAddress myIP = WiFi.softAPIP();
-#ifdef _DEBUG
-  Serial.println("M5camera SoftAP Mode start.");
-  Serial.print("SSID:");
-  Serial.println(ssid);
-  Serial.print("Password:");
-  Serial.println(password);
-#endif
-  startCameraServer();
-#ifdef _DEBUG
-  Serial.print("Camera Ready! Use 'http://");
-  Serial.print(myIP);
-  Serial.println("' to connect");
-#endif
+  bool result = setupWifiSoftAp();
 #else
-  WiFi.begin(ssid, password);
-#ifdef _DEBUG
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.print(".");
-  }
-  Serial.println("");
-  Serial.println("WiFi connected");
-#else
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-  }
-#endif  
-  startCameraServer();
-#ifdef _DEBUG
-  Serial.print("Camera Ready! Use 'http://");
-  Serial.print(WiFi.localIP());
-  Serial.println("' to connect");
+  bool result = setupWifiRouter();
 #endif
+  if ( result ) {
+    startCameraServer();
+#ifdef _DEBUG
+    Serial.print("Camera Ready! Use 'http://");
+    Serial.print(WiFi.localIP());
+    Serial.println("' to connect");
+#endif
+  }
+#ifdef _DEBUG
+  else {
+    Serial.println("");
+    Serial.println("Wifi setup faild");
+  }
 #endif
 
   return true;
 }
+
+void dataSend(byte s)
+{
+  Wire.beginTransmission(I2C_ADDRESS);
+  Wire.write(s);
+#ifdef _DEBUG_I2C
+  byte r = Wire.endTransmission();
+  Serial.print("sendData=");  Serial.print(s, HEX);  Serial.print(" ");
+  Serial.print("I2C TransCode="); Serial.println(r);
+#else          
+  Wire.endTransmission();
+#endif
+}
+
+///////////////////////////////////////////////////////////
 
 void setup() {
   pinMode(PIN_LED, OUTPUT);
@@ -173,17 +207,19 @@ void setup() {
   Serial.println();
 #endif
 
-  // Setup Camera
-  if ( !setupWiFicamera() ) return;
-
   // Setup Bluetooth (for iPad)
   Dabble.begin(_BLE);
 
   // Setup I2C
   Wire.begin(PIN_SDA, PIN_SCL);  // master
 
+  // Setup Camera
+  if ( !setupCamera() ) return;
+
   digitalWrite(PIN_LED, HIGH);   // initial check ok
 }
+
+///////////////////////////////////////////////////////////
 
 void loop() {
   Dabble.processInput();
@@ -216,17 +252,4 @@ void loop() {
   }
   dataSend(s);
   delay(100);
-}
-
-void dataSend(byte s)
-{
-  Wire.beginTransmission(I2C_ADDRESS);
-  Wire.write(s);
-#ifdef _DEBUG_I2C
-  byte r = Wire.endTransmission();
-  Serial.print("sendData=");  Serial.print(s, HEX);  Serial.print(" ");
-  Serial.print("I2C TransCode="); Serial.println(r);
-#else          
-  Wire.endTransmission();
-#endif
 }
