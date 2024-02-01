@@ -47,7 +47,8 @@ ButtonC：終わりの音
 PixyPet先導用．Zumoに書き込むだけでVS-C1とリンクできます．
 
 - PS2RC 左スティック上下で前進後退，右スティック左右で方向
-- PS2RC_LR 左スティック上下で左モータの前進後退，右スティック上下で右モータの前進後退
+- PS2RC_LR 左右の上下で左右モータの前進後退
 
 参考URL https://k-magara.github.io/zumo/vsc1.html  
+[Zumo32U4でサーボの制御](https://k-magara.github.io/zumo/servo.html) をしておかないとコンパイルできません．  
 ![イメージ図](/img/VSC1.jpg)
