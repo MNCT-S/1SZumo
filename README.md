@@ -40,3 +40,14 @@ Arduino IDE で zip形式のライブラリをインストール
 国民的ゲーム音を鳴らします（小ネタ）  
 ButtonA：始まりの音  
 ButtonC：終わりの音  
+
+
+## PS2RC
+
+PixyPet先導用．Zumoに書き込むだけでVS-C1とリンクできます．
+
+- PS2RC 左スティック上下で前進後退，右スティック左右で方向
+- PS2RC_LR 左スティック上下で左モータの前進後退，右スティック上下で右モータの前進後退
+
+参考URL https://k-magara.github.io/zumo/vsc1.html  
+![イメージ図](/img/VSC1.jpg)
