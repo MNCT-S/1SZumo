@@ -42,6 +42,13 @@ ButtonA：始まりの音
 ButtonC：終わりの音  
 
 
+## PixyPet
+
+新旧どちらでも使えます．  
+参考URL https://k-magara.github.io/zumo/32u4_de_pixypet.html  
+![イメージ図](/img/PixyPet.jpg)
+
+
 ## PS2RC
 
 PixyPet先導用．Zumoに書き込むだけでVS-C1とリンクできます．
