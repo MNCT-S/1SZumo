@@ -59,3 +59,13 @@ PixyPet先導用．Zumoに書き込むだけでVS-C1とリンクできます．
 参考URL https://k-magara.github.io/zumo/vsc1.html  
 [Zumo32U4でサーボの制御](https://k-magara.github.io/zumo/servo.html) をしておかないとコンパイルできません．  
 ![イメージ図](/img/VSC1.jpg)
+
+
+## ZumoXBee (SendXBee + RecvXBee)
+
+PixyPet先導用．
+
+- SendXBeeは，ボードを Arduino UNO に変更して書き込み
+
+参考URL https://k-magara.github.io/zumo/xbee.html  
+![イメージ図](/img/ZumoXBee.jpg)
