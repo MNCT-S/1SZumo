@@ -67,6 +67,7 @@ PixyPet先導用．
 
 - SendXBeeは，ボードを Arduino UNO に変更して書き込み
 - Ver2.0 アナログスティック化
+- Ver3.0 MakerUNO (Sound)
 
 参考URL https://k-magara.github.io/zumo/xbee.html  
 ![イメージ図](/img/ZumoXBee.jpg)
