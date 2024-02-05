@@ -66,6 +66,7 @@ PixyPet先導用．Zumoに書き込むだけでVS-C1とリンクできます．
 PixyPet先導用．
 
 - SendXBeeは，ボードを Arduino UNO に変更して書き込み
+- Ver2.0 アナログスティック化
 
 参考URL https://k-magara.github.io/zumo/xbee.html  
 ![イメージ図](/img/ZumoXBee.jpg)
