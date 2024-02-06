@@ -71,3 +71,34 @@ PixyPet先導用．
 
 参考URL https://k-magara.github.io/zumo/xbee.html  
 ![イメージ図](/img/ZumoXBee.jpg)
+
+
+## BLEserial3 (BLEjoy)
+
+PixyPet先導用．RaspberryPI 3B+ と PS4コントローラでBluetooth通信  
+
+- Python 3.9.2  
+- pygame 1.9.6  
+- bleak 0.19.5  
+
+で動作確認．
+
+### RaspberryPI側の事前設定
+- RaspberryPI/BLEjoy.pyを適当なフォルダに保存  
+- RaspberryPI/pswatch.pyを自動起動に設定  
+  たとえば ~/.config/lxsession/LXDE-pi/autostart の末尾に `@python /home/pi/python/pswatch.py` を追記  
+
+### 動かし方
+- ZumoにBLEjoy.inoを書き込み
+- RaspberryPI起動（電源接続のみで良いがOSが起動する頃合いまで待つ）
+- Zumoの電源が入っている状態で PS4コントローラのHOMEボタンを押す（RaspberryPIと接続，PS4のLEDが薄青点灯）
+- 自動的にBLEjoy.pyが起動されZumoと接続される（BLEserial3の赤LEDが点滅から点灯に変わる）
+- PS4コントローラの OPTIONS+X ボタンでRaspberryPIがシャットダウンするように書いてあるので，
+RaspberryPIへのリモート接続やキーボード・モニタ等の設備は不要．
+SDアクセスLEDが消灯したら電源コンセントを抜けばよい．
+（電源ぶち抜きするとSDカードが壊れます）
+
+Windowsでも動いていたが，ライブラリのアップデートで動かなくなった
+
+参考URL https://k-magara.github.io/zumo/ble.html , https://k-magara.github.io/zumo/PS4.html 
+![イメージ図](/img/BLEserial3.jpg)
