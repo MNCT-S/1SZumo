@@ -102,3 +102,18 @@ Windowsでも動いていたが，ライブラリのアップデートで動か�
 
 参考URL https://k-magara.github.io/zumo/ble.html , https://k-magara.github.io/zumo/PS4.html 
 ![イメージ図](/img/BLEserial3.jpg)
+
+
+## （番外）倒立振子とShield版ライントレース (BalancingKAI + LineFollowerW[S])
+
+### BalancingKAI（写真右）
+
+- Zumoスケッチ例 Balancing の改良版．LCDコネクタをむしり取られたZumo筐体の活用として．
+- 水平状態で電源ON，黄色LED消灯後車体を垂直に起こしてAボタン押すと倒立状態を維持．少しバランス悪いです．
+
+### LineFollowerW[S]（写真左）
+
+- Zumoスケッチ例 LineFollower の黒地に白線版．ウチのLEGO用コースに最適化．
+- Sなし：Zumo32U4版，Sあり：ZumoShield版（ボードはArduinoLeonardo）
+
+![イメージ図](/img/bangai.jpg)
