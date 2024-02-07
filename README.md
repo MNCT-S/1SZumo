@@ -104,7 +104,7 @@ Windowsでも動いていたが，ライブラリのアップデートで動か�
 ![イメージ図](/img/BLEserial3.jpg)
 
 
-## （番外）倒立振子とShield版ライントレース (BalancingKAI + LineFollowerW[S])
+## （番外）倒立振子とライントレース (BalancingKAI, LineFollowerW[S])
 
 ### BalancingKAI（写真右）
 
