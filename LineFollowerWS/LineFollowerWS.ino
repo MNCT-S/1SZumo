@@ -31,14 +31,15 @@ const int MAX_SPEED = 400;
 
 void setup()
 {
+  
   // Play a little welcome song
-  buzzer.play(">g32>>c32");
+//  buzzer.play(">g32>>c32");
 
   // Initialize the reflectance sensors module
   reflectanceSensors.init();
 
   // Wait for the user button to be pressed and released
-  button.waitForButton();
+//  button.waitForButton();
 
   // Turn on LED to indicate we are in calibration mode
   pinMode(13, OUTPUT);
@@ -46,7 +47,7 @@ void setup()
 
   // Wait 1 second and then begin automatic sensor calibration
   // by rotating in place to sweep the sensors over the line
-  delay(1000);
+//  delay(1000);
   int i;
   for(i = 0; i < 80; i++)
   {
@@ -64,10 +65,10 @@ void setup()
 
   // Turn off LED to indicate we are through with calibration
   digitalWrite(13, LOW);
-  buzzer.play(">g32>>c32");
+//  buzzer.play(">g32>>c32");
 
   // Wait for the user button to be pressed and released
-  button.waitForButton();
+//  button.waitForButton();
 
   // Play music and wait for it to finish before we start driving.
 //  buzzer.play("L16 cdegreg4");
