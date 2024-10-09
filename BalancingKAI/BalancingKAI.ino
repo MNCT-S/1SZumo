@@ -1,17 +1,17 @@
-/* This example shows how to use the Zumo 32U4's LSM303D
-accelerometer and L3GD20H gyro to balance on its front end.
+/* This example shows how to use the Zumo 32U4's accelerometer
+and gyro to balance on its front end.
 
 Please note that the balancing algorithm in this code is not
 perfect: the robot tends to drift away from its starting position
 over time.  We found that this code works better on carpet than
 on a hard surface.
 
-You will have to remove the Zumo's blade if one is installed.
-After removing the blade, be sure to reinstall the screws that
-were holding the blade.
+You will have to remove the Zumo's blade and front sensor array if
+they are installed. After removing the blade, be sure to reinstall
+the screws that were holding the blade.
 
 This code is sensitive to changes in the Zumo's center of mass,
-so make sure the LCD is plugged in.
+so make sure the display is plugged in.
 
 This code was designed for Zumos with 75:1 HP micro metal
 gearmotors, and it might need to be adjusted to work on Zumos
@@ -20,23 +20,23 @@ with other types of motors. */
 #include <Wire.h>
 #include <Zumo32U4.h>
 
-//#define _USE_LCD
+// This is the angle the robot tries to balance at.  Since the LCD and OLED
+// displays have different weights and cause the Zumo to balance differently,
+// the best target angle will depend on which version of the Zumo 32U4 you have.
+// We suggest starting with a value of 4.0 for the OLED version or 2.0 for the
+// LCD version.
+const float targetAngle = -1.5;
 
-const float kP=30.0;
+const float kP=35.0;
 const float kI=10.0;
-const float kD=20.0;
+const float kD=5.0;
 
-#ifdef _USE_LCD
-Zumo32U4LCD lcd;
-const float targetAngle = 2.0;
-#else
-const float targetAngle = -0.25;
-#endif  
 Zumo32U4ButtonA buttonA;
+Zumo32U4ButtonB buttonB;
+Zumo32U4ButtonC buttonC;
 Zumo32U4Motors motors;
-
-L3G gyro;
-LSM303 compass;
+Zumo32U4Buzzer buzzer;
+Zumo32U4IMU imu;
 
 // This is the average reading obtained from the gyro's Y axis
 // during calibration.
@@ -58,32 +58,13 @@ void setup()
 {
   Wire.begin();
 
-  // Set up the L3GD20H gyro.
-  gyro.init();
+  // Set up the inertial sensors.
+  imu.init();
+  imu.enableDefault();
+  imu.configureForBalancing();
 
-  // 800 Hz output data rate,
-  // low-pass filter cutoff 100 Hz.
-  gyro.writeReg(L3G::CTRL1, 0b11111111);
-
-  // 2000 dps full scale.
-  gyro.writeReg(L3G::CTRL4, 0b00100000);
-
-  // High-pass filter disabled.
-  gyro.writeReg(L3G::CTRL5, 0b00000000);
-
-  // Set up the LSM303D accelerometer.
-  compass.init();
-
-  // 50 Hz output data rate
-  compass.writeReg(LSM303::CTRL1, 0x57);
-
-  // 8 g full-scale
-  compass.writeReg(LSM303::CTRL2, 0x18);
-
-#ifdef _USE_LCD
-  lcd.clear();
-  lcd.print(F("Gyro cal"));
-#endif
+//  display.clear();
+//  display.print(F("Gyro cal"));
   ledYellow(1);
 
   // Delay to give the user time to remove their finger.
@@ -93,17 +74,15 @@ void setup()
   for (uint16_t i = 0; i < 1024; i++)
   {
     // Wait for new data to be available, then read it.
-    while(!gyro.readReg(L3G::STATUS_REG) & 0x08);
-    gyro.read();
+    while(!imu.gyroDataReady()) {}
+    imu.readGyro();
 
     // Add the Y axis reading to the total.
-    gyroOffsetY += gyro.g.y;
+    gyroOffsetY += imu.g.y;
   }
   gyroOffsetY /= 1024;
 
-#ifdef _USE_LCD
-  lcd.clear();
-#endif
+//  display.clear();
   ledYellow(0);
 
   // Display the angle until the user presses A.
@@ -120,9 +99,6 @@ void setup()
     {
       lastCorrectionTime = m;
       correctAngleAccel();
-#ifdef _USE_LCD
-      printAngles();
-#endif
     }
   }
   delay(500);
@@ -141,25 +117,9 @@ void loop()
   {
     lastCorrectionTime = m;
     correctAngleAccel();
-#ifdef _USE_LCD
-    printAngles();
-#endif
     setMotors();
   }
 }
-
-#ifdef _USE_LCD
-void printAngles()
-{
-  lcd.gotoXY(0, 0);
-  lcd.print(angle);
-  lcd.print(F("  "));
-
-  lcd.gotoXY(0, 1);
-  lcd.print(aAngle);
-  lcd.print("  ");
-}
-#endif
 
 // Reads the gyro and uses it to update the angle estimation.
 void updateAngleGyro()
@@ -170,31 +130,36 @@ void updateAngleGyro()
   uint16_t dt = m - lastUpdate;
   lastUpdate = m;
 
-  gyro.read();
+  imu.readGyro();
 
   // Calculate how much the angle has changed, in degrees, and
   // add it to our estimation of the current angle.  The gyro's
   // sensitivity is 0.07 dps per digit.
-  angle += ((float)gyro.g.y - gyroOffsetY) * 70 * dt / 1000000000;
+  angle += ((float)imu.g.y - gyroOffsetY) * 70 * dt / 1000000000;
+}
+
+template <typename Ta, typename Tb> float vector_dot(const Zumo32U4IMU::vector<Ta> *a, const Zumo32U4IMU::vector<Tb> *b)
+{
+  return (a->x * b->x) + (a->y * b->y) + (a->z * b->z);
 }
 
 // Reads the accelerometer and uses it to adjust the angle
 // estimation.
 void correctAngleAccel()
 {
-  compass.read();
+  imu.readAcc();
 
   // Calculate the angle according to the accelerometer.
-  aAngle = -atan2(compass.a.z, -compass.a.x) * 180 / M_PI;
+  aAngle = -atan2(imu.a.z, -imu.a.x) * 180 / M_PI;
 
   // Calculate the magnitude of the measured acceleration vector,
   // in units of g.
-  LSM303::vector<float> const aInG = {
-    (float)compass.a.x / 4096,
-    (float)compass.a.y / 4096,
-    (float)compass.a.z / 4096}
+  Zumo32U4IMU::vector<float> const aInG = {
+    (float)imu.a.x / 4096,
+    (float)imu.a.y / 4096,
+    (float)imu.a.z / 4096}
   ;
-  float mag = sqrt(LSM303::vector_dot(&aInG, &aInG));
+  float mag = sqrt(vector_dot(&aInG, &aInG));
 
   // Calculate how much weight we should give to the
   // accelerometer reading.  When the magnitude is not close to
@@ -233,8 +198,7 @@ void setMotors()
     integral = constrain(integral, -40, 40);
 
     float errorDifference = error - lastError;
-    
-    speed = error*kP + integral*kI + errorDifference*kD;
+    speed = error * kP + errorDifference * kI + integral * kD;
     speed = constrain(speed, -400, 400);
 
     lastError = error;
