@@ -27,7 +27,7 @@ const IPAddress subnet(255,255,255,0);
 // AccessPoint
 const char* ssid = _SSID;
 const char* password = _SSID;
-
+const int   channel = 1;    // 1, 6, 11, 14 で割り振り
 // I2C Setting
 const int     PIN_SDA = 4;
 const int     PIN_SCL = 13;
@@ -58,7 +58,7 @@ void startCameraServer(); // app_httpd.cpp
 #ifdef SOFT_AP
 bool setupWifiSoftAp()
 {
-  WiFi.softAP(ssid,password);
+  WiFi.softAP(ssid, password, channel);
   WiFi.setSleep(false);
   delay(100);
   WiFi.softAPConfig(ip,ip,subnet);
@@ -76,7 +76,7 @@ bool setupWifiSoftAp()
 
 bool setupWifiRouter()
 {
-  WiFi.begin(ssid, password);
+  WiFi.begin(ssid, password, channel);
   int t=0;  // timeout count
   bool connect=true;
   while (WiFi.status() != WL_CONNECTED) {
