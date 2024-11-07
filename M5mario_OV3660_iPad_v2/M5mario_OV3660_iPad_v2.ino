@@ -1,5 +1,9 @@
 #include "esp_camera.h"
 #include <WiFi.h>
+#include <Wire.h>
+#define CUSTOM_SETTINGS
+#define INCLUDE_GAMEPAD_MODULE
+#include <DabbleESP32.h>
 
 // Wifi Router
 #define _SSID   "Mechatro-03"
