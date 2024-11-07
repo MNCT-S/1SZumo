@@ -20,14 +20,14 @@ const IPAddress subnet(255,255,255,0);
 #endif
 
 // Wifi Router
-#define _SSID   "Mechatro-01"
-#define _BLE    "M5Camera01"
+#define _SSID   "Mechatro-03"
+#define _BLE    "M5Camera21"
 #define TIMEOUT 20   // x500ms=10s
 
 // AccessPoint
 const char* ssid = _SSID;
 const char* password = _SSID;
-const int   channel = 1;    // 1, 6, 11, 14 で割り振り
+const int   channel = 6;    // 1, 6, 11 で割り振り
 // I2C Setting
 const int     PIN_SDA = 4;
 const int     PIN_SCL = 13;
@@ -152,7 +152,7 @@ bool setupCamera()
     s->set_saturation(s, -2); // lower the saturation
   }
   // drop down frame size for higher initial frame rate
-  s->set_framesize(s, FRAMESIZE_VGA);
+  s->set_framesize(s, FRAMESIZE_QVGA);
 
 #if defined(CAMERA_MODEL_M5STACK_WIDE) || defined(CAMERA_MODEL_M5STACK_ESP32CAM)
   s->set_vflip(s, 1);
