@@ -1,5 +1,12 @@
+#define CUSTOM_SETTINGS
+#define INCLUDE_GAMEPAD_MODULE
+#include <DabbleESP32.h>
 #include "esp_camera.h"
 #include <WiFi.h>
+#include <Wire.h>
+
+#define _DEBUG
+//#define _DEBUG_I2C
 
 // Wifi Router
 #define _SSID   "Mechatro-03"
@@ -9,6 +16,12 @@ const int   channel = 6;    // 1, 6, 11 で割り振り
 // AccessPoint
 const char* ssid = _SSID;
 const char* password = _SSID;
+
+// I2C Setting
+const int     PIN_SDA = 4;
+const int     PIN_SCL = 13;
+const int     PIN_LED = 2;
+const uint8_t I2C_ADDRESS = 0x10;
 
 //
 // WARNING!!! PSRAM IC required for UXGA resolution and high JPEG quality
@@ -45,18 +58,62 @@ const char* password = _SSID;
 bool setupCamera();
 void startCameraServer();
 void setupLedFlash(int pin);
+void dataSend(byte s);
+//
 
 void setup() {
+  pinMode(PIN_LED, OUTPUT);
+  digitalWrite(PIN_LED, LOW);    // power on
+
+#ifdef _DEBUG  
   Serial.begin(115200);
   Serial.setDebugOutput(true);
   Serial.println();
+#endif
 
+  // Setup Bluetooth (for iPad)
+  Dabble.begin(_BLE);
+
+  // Setup I2C
+  Wire.begin(PIN_SDA, PIN_SCL);  // master
+
+  // Setup Camera
   setupCamera();
+
+  digitalWrite(PIN_LED, HIGH);   // initial check ok
 }
 
 void loop() {
-  // Do nothing. Everything is done in another task by the web server
-  delay(10000);
+  Dabble.processInput();
+  // ボタンの場合
+  // 下位4ビットに前(1)後(2)左(3)右(4)の4パターン|0x80
+  // アナログスティックの場合
+  // 上位4ビットにモータパワー（0-7）
+  // 下位4ビットに進行方向15度ずつ24パターン -> 30度ずつ12パターンに
+  byte s = 0;
+  if ( GamePad.isUpPressed() || GamePad.isTrianglePressed() ) {
+    s  = 1;
+    s |= 0x80;
+  }
+  else if ( GamePad.isDownPressed() || GamePad.isCrossPressed() ) {
+    s  = 2;
+    s |= 0x80;
+  }
+  else if ( GamePad.isLeftPressed() || GamePad.isSquarePressed() ) {
+    s  = 3;
+    s |= 0x80;
+  }
+  else if ( GamePad.isRightPressed() || GamePad.isCirclePressed() ) {
+    s  = 4;
+    s |= 0x80;
+  }
+  else {
+    int p = GamePad.getRadius(),  // 0-6 マニュアルでは7までだが7まで出ない角度があった
+        a = GamePad.getAngle();   // 0-345 step15
+    s = (p<<4) | ((a/30)&0x0f);
+  }
+  dataSend(s);
+  delay(100);
 }
 
 bool setupCamera()
@@ -117,7 +174,9 @@ bool setupCamera()
   // camera init
   esp_err_t err = esp_camera_init(&config);
   if (err != ESP_OK) {
+#ifdef _DEBUG    
     Serial.printf("Camera init failed with error 0x%x", err);
+#endif    
     return false;
   }
 
@@ -153,16 +212,35 @@ bool setupCamera()
 
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
+#ifdef _DEBUG    
     Serial.print(".");
+#endif    
   }
+#ifdef _DEBUG  
   Serial.println("");
   Serial.println("WiFi connected");
+#endif
 
   startCameraServer();
 
+#ifdef _DEBUG
   Serial.print("Camera Ready! Use 'http://");
   Serial.print(WiFi.localIP());
   Serial.println("' to connect");
+#endif
 
   return true;
+}
+
+void dataSend(byte s)
+{
+  Wire.beginTransmission(I2C_ADDRESS);
+  Wire.write(s);
+#ifdef _DEBUG_I2C
+  byte r = Wire.endTransmission();
+  Serial.print("sendData=");  Serial.print(s, HEX);  Serial.print(" ");
+  Serial.print("I2C TransCode="); Serial.println(r);
+#else          
+  Wire.endTransmission();
+#endif
 }

@@ -34,6 +34,7 @@ DabbleアプリでZumoを動かす一式
 - [Dabble-ESP32 library](https://thestempedia.com/download/24469/)  
 Arduino IDE で zip形式のライブラリをインストール
 
+IPアドレス:192.168.11.(100+番号)
 
 ## MarioSounds
 
