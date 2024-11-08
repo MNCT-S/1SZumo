@@ -22,7 +22,6 @@ const IPAddress subnet(255,255,255,0);
 // Wifi Router
 #define _SSID   "Mechatro-03"
 #define _BLE    "M5Camera21"
-#define TIMEOUT 20   // x500ms=10s
 
 // AccessPoint
 const char* ssid = _SSID;
@@ -50,13 +49,12 @@ const uint8_t I2C_ADDRESS = 0x10;
 //#define CAMERA_MODEL_M5STACK_UNITCAM // No PSRAM
 //#define CAMERA_MODEL_AI_THINKER // Has PSRAM
 //#define CAMERA_MODEL_TTGO_T_JOURNAL // No PSRAM
-
 #include "camera_pins.h"
 
 void startCameraServer(); // app_httpd.cpp
 
 #ifdef SOFT_AP
-bool setupWifiSoftAp()
+void setupWifiSoftAp()
 {
   WiFi.softAP(ssid, password, channel);
   WiFi.setSleep(false);
@@ -70,27 +68,18 @@ bool setupWifiSoftAp()
   Serial.print("Password:");
   Serial.println(password);
 #endif
-  return true;
 }
 #endif
 
-bool setupWifiRouter()
+void setupWifiRouter()
 {
   WiFi.begin(ssid, password, channel);
-  int t=0;  // timeout count
-  bool connect=true;
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
 #ifdef _DEBUG
     Serial.print(".");
 #endif    
-    t++;
-    if ( t > TIMEOUT ) {
-      connect = false;
-      break;
-    }
   }
-  return connect;
 }
 
 bool setupCamera()
@@ -160,23 +149,16 @@ bool setupCamera()
 #endif
 
 #ifdef SOFT_AP
-  bool result = setupWifiSoftAp();
+  setupWifiSoftAp();
 #else
-  bool result = setupWifiRouter();
+  setupWifiRouter();
 #endif
-  if ( result ) {
-    startCameraServer();
+
+  startCameraServer();
 #ifdef _DEBUG
-    Serial.print("Camera Ready! Use 'http://");
-    Serial.print(WiFi.localIP());
-    Serial.println("' to connect");
-#endif
-  }
-#ifdef _DEBUG
-  else {
-    Serial.println("");
-    Serial.println("Wifi setup faild");
-  }
+  Serial.print("Camera Ready! Use 'http://");
+  Serial.print(WiFi.localIP());
+  Serial.println("' to connect");
 #endif
 
   return true;
