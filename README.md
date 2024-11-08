@@ -29,12 +29,25 @@ PCに接続したゲームコントローラでZumoを動かす一式
 
 ## M5mario_OV3660_iPad + ZumoMario_iPad
 
-DabbleアプリでZumoを動かす一式
+DabbleアプリでZumoを動かす一式  
+！！esp32 2.0.3 とでしか動きません！！
 
-- [Dabble-ESP32 library](https://thestempedia.com/download/24469/)  
-Arduino IDE で zip形式のライブラリをインストール
+- [Dabble-ESP32 library](https://thestempedia.com/download/28488/) （直リンク）  
+Arduino IDE で zip形式のライブラリをインストール．zipのままArduinoへライブラリインポート
 
-IPアドレス:192.168.11.(100+番号)
+|カメラ№|Channel|
+|:---|:--:|
+|01, 09, 17|01|
+|02, 10, 18|06|
+|03, 11, 19|11|
+|04, 12, 20|01|
+|05, 13, 21|06|
+|06, 14, 22|11|
+|07, 15|01|
+|08, 16|06|
+
+カメラの AccessPoint は左から順に Mechatro-01, 02, 03 とし（テプラ記載）  
+IPアドレスは 192.168.11.(100+番号) とする．
 
 ## MarioSounds
 
