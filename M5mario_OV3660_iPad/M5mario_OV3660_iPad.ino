@@ -19,14 +19,15 @@ const IPAddress ip(192,168,_IP,1);
 const IPAddress subnet(255,255,255,0);
 #endif
 
+// Machine Name
+#define _BLE    "M5Camera01"
 // Wifi Router
 #define _SSID   "Mechatro-01"
-#define _BLE    "M5Camera01"
+const int   channel = 11;
 
 // AccessPoint
 const char* ssid = _SSID;
 const char* password = _SSID;
-const int   channel = 1;    // 1, 6, 11 で割り振り
 // I2C Setting
 const int     PIN_SDA = 4;
 const int     PIN_SCL = 13;
