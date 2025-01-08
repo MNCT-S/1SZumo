@@ -8,22 +8,26 @@
 //#define _DEBUG
 //#define _DEBUG_I2C
 
-// Standalone
-//#define SOFT_AP
-//#define _SSID   "M5Camera99"
-//#define _IP     199
-//#define _BLE    _SSID
+// Standalone or Router
+#define SOFT_AP
+
+
 #ifdef SOFT_AP
-//M5camera SoftAP Configration
-const IPAddress ip(192,168,_IP,1);
-const IPAddress subnet(255,255,255,0);
+  //M5camera SoftAP Configration
+  #define _SSID   "M5Camera99"
+  #define _IP     199
+  #define _BLE    _SSID
+  const IPAddress ip(192,168,_IP,1);
+  const IPAddress subnet(255,255,255,0);
+  const int   channel = 0;
+#else
+  // Wifi Router
+  #define _SSID   "Mechatro-01"
+  // Machine Name
+  #define _BLE    "M5Camera01"
+  const int   channel = 11;
 #endif
 
-// Machine Name
-#define _BLE    "M5Camera01"
-// Wifi Router
-#define _SSID   "Mechatro-01"
-const int   channel = 11;
 
 // AccessPoint
 const char* ssid = _SSID;
@@ -54,9 +58,9 @@ const uint8_t I2C_ADDRESS = 0x10;
 
 void startCameraServer(); // app_httpd.cpp
 
-#ifdef SOFT_AP
-void setupWifiSoftAp()
+void setupWifi()
 {
+#ifdef SOFT_AP
   WiFi.softAP(ssid, password, channel);
   WiFi.setSleep(false);
   delay(100);
@@ -68,12 +72,10 @@ void setupWifiSoftAp()
   Serial.println(ssid);
   Serial.print("Password:");
   Serial.println(password);
+  Serial.print("ip:");
+  Serial.println(ip);
 #endif
-}
-#endif
-
-void setupWifiRouter()
-{
+#else
   WiFi.begin(ssid, password, channel);
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
@@ -81,6 +83,12 @@ void setupWifiRouter()
     Serial.print(".");
 #endif    
   }
+#ifdef _DEBUG  
+  Serial.print("'http://");
+  Serial.print(WiFi.localIP());
+  Serial.println("' to connect");
+#endif
+#endif
 }
 
 bool setupCamera()
@@ -149,17 +157,9 @@ bool setupCamera()
   s->set_hmirror(s, 1);
 #endif
 
-#ifdef SOFT_AP
-  setupWifiSoftAp();
-#else
-  setupWifiRouter();
-#endif
-
   startCameraServer();
 #ifdef _DEBUG
-  Serial.print("Camera Ready! Use 'http://");
-  Serial.print(WiFi.localIP());
-  Serial.println("' to connect");
+  Serial.println("Camera Ready!");
 #endif
 
   return true;
@@ -195,6 +195,9 @@ void setup() {
 
   // Setup I2C
   Wire.begin(PIN_SDA, PIN_SCL);  // master
+
+  // Setup WiFi
+  setupWifi();
 
   // Setup Camera
   if ( !setupCamera() ) return;
