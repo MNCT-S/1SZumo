@@ -30,7 +30,9 @@ PCに接続したゲームコントローラでZumoを動かす一式
 ## M5mario_OV3660_iPad + ZumoMario_iPad
 
 DabbleアプリでZumoを動かす一式  
-！！esp32 2.0.3 とでしか動きません！！
+
+> [!CAUTION]
+> esp32 のバージョン 2.0.3 でしか動きません
 
 - [Dabble-ESP32 library](https://thestempedia.com/download/28488/) （直リンク）  
 Arduino IDE で zip形式のライブラリをインストール．zipのままArduinoへライブラリインポート
@@ -39,7 +41,7 @@ Arduino IDE で zip形式のライブラリをインストール．zipのままA
 |----|:--:|----|
 |Mechatro-01|11|01, 02, 03, 04, 05, 06, 07, 08|
 |Mechatro-02|06|09, 10, 11, 12, 13, 14, 15, 16|
-|Mechatro-03|01|17, 18, 19, 20, 21, 22|
+|Mechatro-03|01|17, 18, 19, 20, 21, 22, 23|
 
 チャンネルはルータ側で手動設定し，それに合わせている．  
 IPアドレスは 192.168.11.(100+番号) とする．
@@ -109,8 +111,20 @@ SDアクセスLEDが消灯したら電源コンセントを抜けばよい．
 
 Windowsでも動いていたが，ライブラリのアップデートで動かなくなった
 
-参考URL https://k-magara.github.io/zumo/ble.html , https://k-magara.github.io/zumo/PS4.html 
+参考URL https://k-magara.github.io/zumo/ble.html , https://k-magara.github.io/zumo/PS4.html  
 ![イメージ図](/img/BLEserial3.jpg)
+
+
+## ESP-Now
+
+> [!CAUTION]
+> esp32 のバージョン 3.3.3 でコードを書いたので，上の M5mario_OV3660_iPad(esp 2.0.3) とは別環境でコンパイルする必要があります．
+
+コントローラアプリ Dabble をエミュレートして送信プログラムを書いたので，
+Zumoへの書き込みは ZumoMario_iPad でOK.  
+注意点として，送信側から受信側のMacアドレスに決め打ちで接続しに行くので，受信側の電源を先に入れておく必要があります．
+
+![イメージ図](/img/ESP32NOW.jpg)
 
 
 ## （番外）倒立振子とライントレース (BalancingKAI, LineFollowerW[S])
