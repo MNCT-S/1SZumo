@@ -115,7 +115,7 @@ Windowsでも動いていたが，ライブラリのアップデートで動か�
 ![イメージ図](/img/BLEserial3.jpg)
 
 
-## ESP-Now
+## ESP-Now (ESPNOWsend + ESPNOWrecv + ZumoMario_iPad)
 
 > [!CAUTION]
 > esp32 のバージョン 3.3.3 でコードを書いたので，上の M5mario_OV3660_iPad(esp 2.0.3) とは別環境でコンパイルする必要があります．
