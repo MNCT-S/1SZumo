@@ -2,10 +2,6 @@
 #include <WiFi.h>
 #include <math.h>
 
-////////////////////////////////////////////////////
-// 先に受信側(Zumo)の電源を入れておくこと
-////////////////////////////////////////////////////
-
 // Analog input port
 const int adX = 32;   // 向きを変更
 const int adY = 33;
@@ -59,12 +55,16 @@ void loop() {
   if ( fabs(x2) <= 1.5 ) x2 = 0;
   if ( fabs(y2) <= 1.5 ) y2 = 0;
 
-  // GamePad.getRadius()
-  int r = sqrt(x2*x2+y2*y2);
+  // GamePad.getRadius() 0-7
+  int r = constrain(sqrt(x2*x2+y2*y2), 0, 7);
   // GamePad.getAngle()
   float a = -atan2(y2, x2)*180.0/M_PI;
   if ( a < 0 ) a+=360.0;
   int a30 = a / 30;
+
+  // debug
+//  Serial.print("r="); Serial.print(r);
+//  Serial.print(", a="); Serial.println(a30);
 
   uint8_t send = (r<<4) | (a30&0x0f);
   esp_now_send(targetAddress, &send, 1);  // send to 1byte
