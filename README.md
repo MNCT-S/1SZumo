@@ -115,15 +115,16 @@ Windowsでも動いていたが，ライブラリのアップデートで動か�
 ![イメージ図](/img/BLEserial3.jpg)
 
 
-## ESP-Now
+## ESP-Now (ESPNOWsend + ESPNOWrecv + ZumoMario_iPad)
 
 > [!CAUTION]
 > esp32 のバージョン 3.3.3 でコードを書いたので，上の M5mario_OV3660_iPad(esp 2.0.3) とは別環境でコンパイルする必要があります．
 
 コントローラアプリ Dabble をエミュレートして送信プログラムを書いたので，
 Zumoへの書き込みは ZumoMario_iPad でOK.  
-注意点として，送信側から受信側のMacアドレスに決め打ちで接続しに行くので，受信側の電源を先に入れておく必要があります．
+注意点として，送信側から受信側のMacアドレスに決め打ちで接続しに行くので，受信側ESP32のMacアドレスを事前に調べておいてください．
 
+参考URL https://k-magara.github.io/zumo/espnow.html  
 ![イメージ図](/img/ESP32NOW.jpg)
 
 
